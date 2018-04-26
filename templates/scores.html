@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    index page
+{% endblock %}
+
+{% block main %}
+
+<html>
+<head>
+
+</head>
+<body>
+	<h3 align="center"> TOP SCORES!
+		</h3>
+
+  <!-- <h3>You can drag or click on the points to add them to the path.</h3> -->
+
+
+
+ <main class="container p-5">
+
+ <table class="table table-striped" style="width:100%">
+
+      <tr>
+
+        <th>User</th>
+
+        <th>Distance</th>
+
+        <th>Time</th>
+
+
+      </tr>
+
+
+    {% for row in scores %}
+
+            <tr>
+               <td> {{ row['username'] }} </td>
+               <td> {{ row['shortestpathlength'] }} </td>
+               <td> {{ row['besttime'] }} </td>
+            </tr>
+
+    {% endfor %}
+</table>
+
+<ul class="navbar-nav ml-auto mt-2">
+
+      <li class="nav-item"><a class="nav-link" href="/back"><span class="red">Back to the path finding game</span></a></li>
+
+</ul>
+
+
+
+
+
+
+
+
+{% endblock %}
