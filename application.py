@@ -5,10 +5,11 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask_sqlalchemy import SQLAlchemy
 
 from flask import jsonify
 import sys
-
+import os
 from helpers import apology, login_required
 import json
 
@@ -57,8 +58,8 @@ class Game(db.Model):
     db.__tablename__ = 'game'
     id = db.Column(db.Integer, primary_key=True)
     userid = db.Column(db.Integer, db.ForeignKey("user.id"))
-    time = db.Column(db.Real, nullable=False)
-    pathlength = db.Column(db.Real, nullable=False)
+    time = db.Column(db.Float, nullable=False)
+    pathlength = db.Column(db.Float, nullable=False)
     destinationpoints = db.Column(db.String(4096), nullable=False)
     pathpoints = db.Column(db.String(4096), nullable=False)
 
@@ -73,8 +74,8 @@ class Hiscore(db.Model):
     db.__tablename__ = 'hiscore'
     id = db.Column(db.Integer, primary_key=True)
     userid = db.Column(db.Integer, db.ForeignKey("user.id"))
-    besttime = db.Column(db.Real, nullable=False)
-    shortestpathlength = db.Column(db.Real, nullable=False)
+    besttime = db.Column(db.Float, nullable=False)
+    shortestpathlength = db.Column(db.Float, nullable=False)
 
     def __init__(self, userid, time, pathlength):
         self.userid = userid
