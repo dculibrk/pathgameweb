@@ -50,6 +50,9 @@ class User(db.Model):
     sex = db.Column(db.Integer, nullable=True)
     age = db.Column(db.Integer, nullable=True)
 
+    games = db.relationship("Game", backref="user")
+    hiscores = db.relationship("Hiscore", backref="user")
+
     def __init__(self, name, passwd):
         self.name = name
         self.passwd = passwd
@@ -62,6 +65,9 @@ class Game(db.Model):
     pathlength = db.Column(db.Float, nullable=False)
     destinationpoints = db.Column(db.String(4096), nullable=False)
     pathpoints = db.Column(db.String(4096), nullable=False)
+
+    #user = db.relationship('User',
+    #    backref=db.backref('games', lazy=True))
 
     def __init__(self, userid, time, pathlength, destinationpoints, pathpoints):
         self.userid = userid
@@ -76,6 +82,9 @@ class Hiscore(db.Model):
     userid = db.Column(db.Integer, db.ForeignKey("user.id"))
     besttime = db.Column(db.Float, nullable=False)
     shortestpathlength = db.Column(db.Float, nullable=False)
+
+    #user = db.relationship('User',
+    #    backref=db.backref('hiscore', lazy=True))
 
     def __init__(self, userid, time, pathlength):
         self.userid = userid
@@ -111,16 +120,19 @@ def login():
             return apology("must provide password", 403)
 
         # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=request.form.get("username"))
-
+        #rows = db.execute("SELECT * FROM users WHERE username = :username",
+        #                  username=request.form.get("username"))
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["passwd"], request.form.get("password")):
+        curr_user = User.query.filter(User.username == request.form.get("username")).first()
+        if curr_user == None or not check_password_hash(curr_user.passwd, request.form.get("password")):
             return apology("invalid username and/or password", 403)
 
+        #if len(rows) != 1 or not check_password_hash(rows[0]["passwd"], request.form.get("password")):
+        #    return apology("invalid username and/or password", 403)
+
         # Remember which user has logged in
-        session["user_id"] = rows[0]["userid"]
+        session["user_id"] = curr_user.id #rows[0]["userid"]
 
         # Redirect user to home page
         return redirect("/")
@@ -167,7 +179,7 @@ def register():
         name = request.form.get("username")
         new_user = User(name, generate_password_hash(request.form.get("password")))
 
-        if User.query.filter(User.name == name).first() != None:
+        if User.query.filter(User.username == name).first() != None:
              return apology("username already exists", 400)
 
         db.session.add(new_user)
@@ -208,23 +220,33 @@ def get_post_javascript_data():
                 print(jsondata['pathpoints'])
 
                 #store the game
-                result = db.execute("INSERT INTO games (userid, time, pathlength, destinationpoints, pathpoints) VALUES(:userid, :time, :pathlength, :destinationpoints, :pathpoints)",
-                    userid=session["user_id"], time=jsondata['time'], pathlength = jsondata['pathlength'],
-                    destinationpoints = str(jsondata['pointsdestination']), pathpoints = str(jsondata['pathpoints']))
+                result = Game(session["user_id"], jsondata['time'], jsondata['pathlength'],
+                    str(jsondata['pointsdestination']), str(jsondata['pathpoints']))
+                #result = db.execute("INSERT INTO games (userid, time, pathlength, destinationpoints, pathpoints) VALUES(:userid, :time, :pathlength, :destinationpoints, :pathpoints)",
+                #    userid=session["user_id"], time=jsondata['time'], pathlength = jsondata['pathlength'],
+                #    destinationpoints = str(jsondata['pointsdestination']), pathpoints = str(jsondata['pathpoints']))
+                db.session.add(result)
 
                 #update hiscores
-                rows = db.execute("SELECT * FROM hiscores WHERE userid = :userid",
-                          userid=session['user_id'])
+                rows = Hiscore.query.filter(Hiscore.userid == session['user_id']).all()
+                #rows = db.execute("SELECT * FROM hiscores WHERE userid = :userid",
+                #          userid=session['user_id'])
 
                 # Ensure username exists and password is correct
                 if len(rows) != 1:
-                    result = db.execute("INSERT INTO hiscores (userid, besttime, shortestpathlength) VALUES(:userid, :time, :pathlength)",
-                    userid=session['user_id'], time=jsondata['time'], pathlength = jsondata['pathlength'])
+                    new_hiscore = Hiscore(session['user_id'], jsondata['time'], jsondata['pathlength'])
+                    #result = db.execute("INSERT INTO hiscores (userid, besttime, shortestpathlength) VALUES(:userid, :time, :pathlength)",
+                    #userid=session['user_id'], time=jsondata['time'], pathlength = jsondata['pathlength'])
+                    db.session.add(result)
                 else:
-                    if rows[0]['shortestpathlength'] > jsondata['pathlength'] and rows[0]['besttime'] > jsondata['time']:
-                        result = db.execute("UPDATE hiscores (besttime, shortestpathlength) VALUES(:time, :pathlength) WHERE userid = :userid",
-                            time=jsondata['time'], pathlength = jsondata['pathlength'], userid=session['user_id'])
-
+                    if rows[0].shortestpathlength > jsondata['pathlength'] and rows[0].besttime > jsondata['time']:
+                        rows[0].besttime = jsondata['time']
+                        rows[0].shortestpathlength = jsondata['pathlength']
+                        roes[0].userid = session['user_id']
+                    #if rows[0]['shortestpathlength'] > jsondata['pathlength'] and rows[0]['besttime'] > jsondata['time']:
+                        #result = db.execute("UPDATE hiscores (besttime, shortestpathlength) VALUES(:time, :pathlength) WHERE userid = :userid",
+                        #    time=jsondata['time'], pathlength = jsondata['pathlength'], userid=session['user_id'])
+                db.session.commit()
     return 'nja' # json.loads(jsdata)[0]
 
 @app.route('/receiver', methods = ['POST'])
@@ -243,7 +265,8 @@ def worker():
 
 @app.route("/scores", methods = ['GET','POST'])
 def scores():
-    rows = db.execute("SELECT username, shortestpathlength, besttime FROM hiscores INNER JOIN users ON hiscores.userid = users.userid LIMIT 10;")
+    #rows = db.execute("SELECT username, shortestpathlength, besttime FROM hiscores INNER JOIN users ON hiscores.userid = users.userid LIMIT 10;")
+    rows = Hiscore.query .top(10)
     print(rows)
     return render_template("scores.html", scores = rows)
 
