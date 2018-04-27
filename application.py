@@ -16,6 +16,10 @@ import json
 # Configure application
 app = Flask(__name__)
 
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+
 # Ensure responses aren't cached
 @app.after_request
 def after_request(response):
@@ -54,7 +58,7 @@ class User(db.Model):
     hiscores = db.relationship("Hiscore", backref="user")
 
     def __init__(self, name, passwd):
-        self.name = name
+        self.username = name
         self.passwd = passwd
 
 class Game(db.Model):
@@ -185,12 +189,15 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        #get the id
+        new_user = User.query.filter(User.username == name).first()
+
         #result = db.execute("INSERT INTO users (username, hash) VALUES(:username, :hash)",
         #                    username=request.form.get("username"), hash=generate_password_hash(request.form.get("password")))
-        if not result:
-            return apology("izaberi drugo ime")
+        #if not result:
+        #    return apology("izaberi drugo ime")
         # Remember which user has logged in
-        session['user_id'] = result
+        session['user_id'] = new_user.id
 
         # Redirect user to home page
         return redirect("/")
