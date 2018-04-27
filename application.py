@@ -71,8 +71,8 @@ class Game(db.Model):
 
     def __init__(self, userid, time, pathlength, destinationpoints, pathpoints):
         self.userid = userid
-        self.besttime = time
-        self.shortestpathlength = pathlength
+        self.time = time
+        self.pathlength = pathlength
         self.destinationpoints = destinationpoints
         self.pathpoints = pathpoints
 
@@ -132,7 +132,7 @@ def login():
         #    return apology("invalid username and/or password", 403)
 
         # Remember which user has logged in
-        session["user_id"] = curr_user.id #rows[0]["userid"]
+        session['user_id'] = curr_user.id #rows[0]["userid"]
 
         # Redirect user to home page
         return redirect("/")
@@ -190,7 +190,7 @@ def register():
         if not result:
             return apology("izaberi drugo ime")
         # Remember which user has logged in
-        session["user_id"] = result
+        session['user_id'] = result
 
         # Redirect user to home page
         return redirect("/")
@@ -220,7 +220,7 @@ def get_post_javascript_data():
                 print(jsondata['pathpoints'])
 
                 #store the game
-                result = Game(session["user_id"], jsondata['time'], jsondata['pathlength'],
+                result = Game(session['user_id'], jsondata['time'], jsondata['pathlength'],
                     str(jsondata['pointsdestination']), str(jsondata['pathpoints']))
                 #result = db.execute("INSERT INTO games (userid, time, pathlength, destinationpoints, pathpoints) VALUES(:userid, :time, :pathlength, :destinationpoints, :pathpoints)",
                 #    userid=session["user_id"], time=jsondata['time'], pathlength = jsondata['pathlength'],
@@ -234,10 +234,10 @@ def get_post_javascript_data():
 
                 # Ensure username exists and password is correct
                 if len(rows) != 1:
-                    new_hiscore = Hiscore(session['user_id'], jsondata['time'], jsondata['pathlength'])
+                    new_hiscore = Hiscore(session['user_id'], str(jsondata['time']), str(jsondata['pathlength']))
                     #result = db.execute("INSERT INTO hiscores (userid, besttime, shortestpathlength) VALUES(:userid, :time, :pathlength)",
                     #userid=session['user_id'], time=jsondata['time'], pathlength = jsondata['pathlength'])
-                    db.session.add(result)
+                    db.session.add(new_hiscore)
                 else:
                     if rows[0].shortestpathlength > jsondata['pathlength'] and rows[0].besttime > jsondata['time']:
                         rows[0].besttime = jsondata['time']
@@ -266,7 +266,7 @@ def worker():
 @app.route("/scores", methods = ['GET','POST'])
 def scores():
     #rows = db.execute("SELECT username, shortestpathlength, besttime FROM hiscores INNER JOIN users ON hiscores.userid = users.userid LIMIT 10;")
-    rows = Hiscore.query .top(10)
+    rows = Hiscore.query.order_by(Hiscore.shortestpathlength,Hiscore.besttime).limit(10)
     print(rows)
     return render_template("scores.html", scores = rows)
 
