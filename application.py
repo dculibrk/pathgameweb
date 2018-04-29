@@ -181,7 +181,11 @@ def register():
             return apology("password and confirmation doesn't match", 400)
 
         name = request.form.get("username")
+        sex = request.form.get("sex")
+        age = request.form.get("age")
         new_user = User(name, generate_password_hash(request.form.get("password")))
+        new_user.sex = sex;
+        new_user.age = age;
 
         if User.query.filter(User.username == name).first() != None:
              return apology("username already exists", 400)
