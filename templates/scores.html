@@ -25,6 +25,7 @@
       <tr>
         <th>Place</th>
         <th>User</th>
+        <th>Level</th>
         <th>Distance</th>
         <th>Time</th>
         <th>Score</th>
@@ -36,6 +37,7 @@
             <tr>
                <td> {{ loop.index }} </td>
                <td> {{ row.user.username }} </td>
+               <td> {{ row.user.level }} </td>
                <td> {{ '%0.2f' % row.shortestpathlength|float  }} </td>
                <td> {{ '%0.2f' % row.besttime|float }} </td>
                <td> {{ row.score }} </td>
