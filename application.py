@@ -14,6 +14,7 @@ import sys
 import os
 from helpers import apology, login_required
 import json
+import redis
 
 # Configure application
 app = Flask(__name__)
@@ -36,9 +37,9 @@ def after_request(response):
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = True
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
-
+app.config["SESSION_TYPE"] = 'redis' #'memcached' #'redis'# #"filesystem"
+#app.config["SESSION_REDIS"] = 'redis://h:pd834160182df6dadd4e7fa1f9ff67e89f1329d0beb0e81d78f66950bac972ad9@ec2-18-204-181-140.compute-1.amazonaws.com:20079'
+app.config["SESSION_REDIS"] = redis.from_url('redis://h:pd834160182df6dadd4e7fa1f9ff67e89f1329d0beb0e81d78f66950bac972ad9@ec2-18-204-181-140.compute-1.amazonaws.com:20079')
 # Configure CS50 Library to use SQLite database
 #db = SQL("sqlite:///finance.db")
 #db = SQL("sqlite:///pathgame.db")
@@ -46,6 +47,11 @@ Session(app)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+Session(app)
+#sess = Session()
+
+#sess.init_app(app)
+
 db = SQLAlchemy(app)
 
 class User(db.Model):

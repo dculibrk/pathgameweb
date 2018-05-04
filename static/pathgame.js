@@ -140,6 +140,7 @@ function endGame(){
     //var textover = new PointText({ point: view.center, justification: 'center', fontSize: 200, fillColor: 'cyan'});
     //textover.content = 'GAME OVER';
     //text1.content = 'GAME OVER';
+    //textover.content = 'LEVEL '+str(level)+' DONE!'
     gameOver = 1;
     //textover.opacity = 0;
 
@@ -390,10 +391,10 @@ for(var row = 0, i = 0; row < rows; row++) {
     }
 }
 
-var textover = new PointText({ point: view.center, justification: 'center', fontSize: 80, fillColor: 'cyan'});
+var textover = new PointText({ point: view.center, justification: 'center', fontSize: 70, fillColor: 'cyan'});
 //textover.position.x -= xstart;
 textover.position.y = Math.floor(rows/2)*yspacing + ystart; //-=ystart;
-textover.content = 'GAME OVER!';
+textover.content = 'LEVEL ' +  level + ' DONE!'; //'GAME OVER!';
 textover.opacity = 0;
 
 //create the depo to be in the middle of the grid
