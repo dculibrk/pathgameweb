@@ -433,6 +433,8 @@ depo.onMouseDown = function(event) {
 //suggestedPathPoints[0] = new Point(depox,depoy);
 suggestedPathPoints.push(new Point(depox,depoy));
 
+depo.bringToFront();
+
 //animate stuff
 function onFrame(event) {
     // Each frame, rotate the path by 3 degrees:
@@ -452,6 +454,7 @@ function onFrame(event) {
     }
     //updateSuggestedPath(event.point.x, event.point.y);
     if(gameOver){
+        textover.bringToFront();
         if(textover.opacity < 1) {
             textover.opacity += 0.1;
         }else{
