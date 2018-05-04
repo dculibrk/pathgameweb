@@ -7,6 +7,8 @@ from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_sqlalchemy import SQLAlchemy
 
+from sqlalchemy import desc
+
 from flask import jsonify
 import sys
 import os
@@ -55,11 +57,15 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=True)
 
     games = db.relationship("Game", backref="user")
-    hiscores = db.relationship("Hiscore", backref="user")
+    hiscore = db.relationship("Hiscore", backref="user")
+    level = db.Column(db.Integer)
+    gamesplayed = db.Column(db.Integer)
 
     def __init__(self, name, passwd):
         self.username = name
         self.passwd = passwd
+        self.level = 1
+        self.gamesplayed = 0
 
 class Game(db.Model):
     db.__tablename__ = 'game'
@@ -69,16 +75,21 @@ class Game(db.Model):
     pathlength = db.Column(db.Float, nullable=False)
     destinationpoints = db.Column(db.String(4096), nullable=False)
     pathpoints = db.Column(db.String(4096), nullable=False)
+    numdestpoints = db.Column(db.Integer)
+    level = db.Column(db.Integer)
+    score = db.Column(db.Integer)   # 3000 - pathlength/numdestpoints + (10 - time/numdestpoints)*numdestpoints
 
-    #user = db.relationship('User',
-    #    backref=db.backref('games', lazy=True))
+    game = db.relationship('Hiscore', backref="game")
 
-    def __init__(self, userid, time, pathlength, destinationpoints, pathpoints):
+    def __init__(self, userid, time, pathlength, destinationpoints, pathpoints, numdestpoints, level, score):
         self.userid = userid
         self.time = time
         self.pathlength = pathlength
         self.destinationpoints = destinationpoints
         self.pathpoints = pathpoints
+        self.numdestpoints = numdestpoints
+        self.level = level
+        self.score = score
 
 class Hiscore(db.Model):
     db.__tablename__ = 'hiscore'
@@ -86,24 +97,22 @@ class Hiscore(db.Model):
     userid = db.Column(db.Integer, db.ForeignKey("user.id"))
     besttime = db.Column(db.Float, nullable=False)
     shortestpathlength = db.Column(db.Float, nullable=False)
-
+    gameid = db.Column(db.Integer, db.ForeignKey("game.id"))
+    score = db.Column(db.Integer)   # 3000 - shortestpathlength/numdestpoints + (10 - besttime/numdestpoints)*numdestpoints
     #user = db.relationship('User',
     #    backref=db.backref('hiscore', lazy=True))
 
-    def __init__(self, userid, time, pathlength):
+    def __init__(self, userid, time, pathlength, gameid, score):
         self.userid = userid
         self.besttime = time
         self.shortestpathlength = pathlength
+        self.gameid = gameid
+        self.score = score
 
 @app.route("/")
 @login_required
 def index():
-
-
-
-    return render_template("index.html")
-
-
+    return render_template("index.html", level = session['level'])
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -137,14 +146,13 @@ def login():
 
         # Remember which user has logged in
         session['user_id'] = curr_user.id #rows[0]["userid"]
-
+        session['level'] = curr_user.level
         # Redirect user to home page
         return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("login.html")
-
 
 @app.route("/logout")
 def logout():
@@ -155,10 +163,6 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
-
-
-
-
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -224,19 +228,28 @@ def get_post_javascript_data():
                 print('got some json data!\n')
                 print('time was: ' + str(jsondata['time']) + '\n')
                 print('length was: ' + str(jsondata['pathlength']) + '\n')
+                print('num dest points was: ' + str(jsondata['numdestpoints']) + '\n')
 
                 for item in jsondata:
                     print(item)
 
                 print(jsondata['pathpoints'])
 
+                score = 3000 - jsondata['pathlength']/jsondata['numdestpoints'] + (10 - jsondata['time']/jsondata['numdestpoints'])*jsondata['numdestpoints'] # 3000 - pathlength/numdestpoints + (10 - time/numdestpoints)*numdestpoints
+
                 #store the game
                 result = Game(session['user_id'], jsondata['time'], jsondata['pathlength'],
-                    str(jsondata['pointsdestination']), str(jsondata['pathpoints']))
+                    str(jsondata['pointsdestination']), str(jsondata['pathpoints']), jsondata['numdestpoints'], session['level'], score)
                 #result = db.execute("INSERT INTO games (userid, time, pathlength, destinationpoints, pathpoints) VALUES(:userid, :time, :pathlength, :destinationpoints, :pathpoints)",
                 #    userid=session["user_id"], time=jsondata['time'], pathlength = jsondata['pathlength'],
                 #    destinationpoints = str(jsondata['pointsdestination']), pathpoints = str(jsondata['pathpoints']))
+
                 db.session.add(result)
+
+                db.session.flush() #to get the game.id assigned
+
+                #increase the user level
+                result.user.level = result.user.level + 1;
 
                 #update hiscores
                 rows = Hiscore.query.filter(Hiscore.userid == session['user_id']).all()
@@ -245,19 +258,28 @@ def get_post_javascript_data():
 
                 # Ensure username exists and password is correct
                 if len(rows) != 1:
-                    new_hiscore = Hiscore(session['user_id'], str(jsondata['time']), str(jsondata['pathlength']))
+                    new_hiscore = Hiscore(session['user_id'], str(jsondata['time']), str(jsondata['pathlength']), result.id, score)
                     #result = db.execute("INSERT INTO hiscores (userid, besttime, shortestpathlength) VALUES(:userid, :time, :pathlength)",
                     #userid=session['user_id'], time=jsondata['time'], pathlength = jsondata['pathlength'])
                     db.session.add(new_hiscore)
                 else:
-                    if rows[0].shortestpathlength > jsondata['pathlength'] and rows[0].besttime > jsondata['time']:
+                    if rows[0].score < score:
+                    #if rows[0].shortestpathlength > jsondata['pathlength'] and rows[0].besttime > jsondata['time']:
                         rows[0].besttime = jsondata['time']
                         rows[0].shortestpathlength = jsondata['pathlength']
-                        roes[0].userid = session['user_id']
+                        rows[0].userid = session['user_id']
+                        rows[0].gameid = result.id
+                        rows[0].score = score
                     #if rows[0]['shortestpathlength'] > jsondata['pathlength'] and rows[0]['besttime'] > jsondata['time']:
                         #result = db.execute("UPDATE hiscores (besttime, shortestpathlength) VALUES(:time, :pathlength) WHERE userid = :userid",
                         #    time=jsondata['time'], pathlength = jsondata['pathlength'], userid=session['user_id'])
                 db.session.commit()
+
+                session['level'] = result.user.level #update the session level
+
+                print('user level is: ' + str(session['level']) + '\n')
+
+
     return 'nja' # json.loads(jsdata)[0]
 
 @app.route('/receiver', methods = ['POST'])
@@ -277,27 +299,15 @@ def worker():
 @app.route("/scores", methods = ['GET','POST'])
 def scores():
     #rows = db.execute("SELECT username, shortestpathlength, besttime FROM hiscores INNER JOIN users ON hiscores.userid = users.userid LIMIT 10;")
-    rows = Hiscore.query.order_by(Hiscore.shortestpathlength,Hiscore.besttime).limit(10)
+    #rows = Hiscore.query.order_by(Hiscore.shortestpathlength,Hiscore.besttime).limit(10)
+    rows = Hiscore.query.order_by(desc(Hiscore.score)).limit(10)
     print(rows)
     return render_template("scores.html", scores = rows)
 
-
-
-
 @app.route("/back")
+@login_required
 def back():
-
-
-    return render_template("index.html")
-
-
-
-
-
-
-
-
-
+    return render_template("index.html", level = session['level'])
 
 def errorhandler(e):
     """Handle error"""

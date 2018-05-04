@@ -1,26 +1,25 @@
 {% extends "layout.html" %}
 
+{% block level %}
+<script>
+var level = {{ level }};
+</script>
+{% endblock %}
+
 {% block title %}
-    index page
+    The path finding game
 {% endblock %}
 
 {% block main %}
 
-	<h3 align="center"> Welcome to the path finding game.
-		</h3>
+	<h3 align="center"> Welcome to the path finding game.</h3>
 
   <!-- <h3>You can drag or click on the points to add them to the path.</h3> -->
 	<div class="main" >
         <p> The goal is to connect all the blue points starting from the rotating square, as quickly as you can.</p>
-		<canvas id="dubasCanvas" align="center" resize></canvas>
+		    <canvas id="dubasCanvas" align="center" resize></canvas>
+        <p class="nav-item"><a class="nav-link" href="/back">PLAY AGAIN</a> <a class="nav-link" href="/scores">SCORES</a></p>
 	</div>
 
-	<ul class="navbar-nav ml-auto mt-2">
-
-
-      <li class="nav-item"><a class="nav-link" href="/scores">Scores</a></li>
-
-
-     </ul>
 
 {% endblock %}

@@ -55,7 +55,7 @@ border: 1px solid black;
 #dubasCanvas {
 	border: none;
   display: inline-block;
-	height: 600px;
+	height: 500px;
   width: 600px;
   max-width: 100%;
   max-height: 100%;

@@ -7,7 +7,7 @@ var x;
 var y;
 
 //center coordinates of first circle being drawn
-var xstart = 50;
+var xstart = 90;
 var ystart = 50;
 
 // distance between center coordinates
@@ -23,7 +23,8 @@ var fillColor = 'orange';
 var points = [];
 var gameStarted = 0;
 
-var probabilityDestination = 0.2; //20% of the grid points (randomly selected) will be destinations
+//var level = 1; //parseInt({{level}});
+var probabilityDestination = 0.1 + 0.01*(level - 1); //20% of the grid points (randomly selected) will be destinations
 
 
 //var canvas = document.getElementById('dubasCanvas');
@@ -87,7 +88,7 @@ text1.position.y += (ystart - 10);
 text.position.x = xstart + 50;
 text.position.y += (ystart - 10);
 
-text1.content = 'TIME: ' + 0;
+text1.content =  'TIME: ' + 0;
 
 var timeElapsed = 0; //this is the timer
 
@@ -171,6 +172,8 @@ function endGame(){
 
     var pointsDestinationJSON= [];
 
+    var numdestpoints = 0;
+
     for(var i in pointsDestination) {
 
         var item = pointsDestination[i];
@@ -179,11 +182,13 @@ function endGame(){
             "x" : item.x,
             "y"  : item.y
         });
+        numdestpoints++;
     }
 
     result.pointsdestination = pointsDestinationJSON;
     result.time = timeElapsed;
     result.pathlength = pathlength;
+    result.numdestpoints = numdestpoints;
 
     //$.post("receiver", { 'pointsdestination' : 'nja' , 'pathpoints': 'nja2' }, function(){
         //console.log(result);
@@ -386,8 +391,8 @@ for(var row = 0, i = 0; row < rows; row++) {
 }
 
 var textover = new PointText({ point: view.center, justification: 'center', fontSize: 80, fillColor: 'cyan'});
-textover.position.x -= xstart;
-textover.position.y -= ystart;
+//textover.position.x -= xstart;
+textover.position.y = Math.floor(rows/2)*yspacing + ystart; //-=ystart;
 textover.content = 'GAME OVER!';
 textover.opacity = 0;
 

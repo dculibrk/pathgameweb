@@ -23,23 +23,22 @@
  <table class="table table-striped" style="width:100%">
 
       <tr>
-
+        <th>Place</th>
         <th>User</th>
-
         <th>Distance</th>
-
         <th>Time</th>
-
-
+        <th>Score</th>
       </tr>
 
 
     {% for row in scores %}
 
             <tr>
+               <td> {{ loop.index }} </td>
                <td> {{ row.user.username }} </td>
-               <td> {{ row.shortestpathlength }} </td>
-               <td> {{ row.besttime }} </td>
+               <td> {{ '%0.2f' % row.shortestpathlength|float  }} </td>
+               <td> {{ '%0.2f' % row.besttime|float }} </td>
+               <td> {{ row.score }} </td>
             </tr>
 
     {% endfor %}
