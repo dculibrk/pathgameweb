@@ -215,6 +215,7 @@ def register():
         return render_template("register.html")
 
 @app.route('/postmethod', methods = ['POST'])
+@login_required
 def get_post_javascript_data():
     if request.method == "POST":
         jsdata = request.form.get('javascript_data') #request.form['javascript_data']
@@ -296,7 +297,8 @@ def worker():
             result += str(item['pointsdestination']) + '\n'
     return result
 
-@app.route("/scores", methods = ['GET','POST'])
+@app.route("/scores", methods = ['GET'])
+@login_required
 def scores():
     #rows = db.execute("SELECT username, shortestpathlength, besttime FROM hiscores INNER JOIN users ON hiscores.userid = users.userid LIMIT 10;")
     #rows = Hiscore.query.order_by(Hiscore.shortestpathlength,Hiscore.besttime).limit(10)
