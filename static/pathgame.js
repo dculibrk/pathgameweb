@@ -416,7 +416,7 @@ depo.onMouseDown = function(event) {
     if(!gameStarted){
         this.fillColor = 'red';
         gameStarted = 1;
-    }else{
+    }else if (!gameOver){
         //
         if(numDestinations <= 0){
             //we are in the end game stage
@@ -425,6 +425,8 @@ depo.onMouseDown = function(event) {
             }
             endGame();
         }
+    }else{
+        window.location.assign("/back");
     }
 }
 //gridGroup.addChild(depo);
@@ -434,6 +436,12 @@ depo.onMouseDown = function(event) {
 suggestedPathPoints.push(new Point(depox,depoy));
 
 depo.bringToFront();
+
+textover.onMouseDown = function(event) {
+    if(gameOver){
+        window.location.assign("/back");
+    }
+}
 
 //animate stuff
 function onFrame(event) {
