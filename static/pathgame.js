@@ -471,5 +471,6 @@ function onMouseMove(event) {
     if (gameStarted && !gameOver){
         //updateSuggestedPath(event.middlePoint.x, event.middlePoint.y);
         updateSuggestedPath(event.point.x, event.point.y);
+        depo.bringToFront();
     }
 }
