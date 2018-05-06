@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    The path finding game for mobile
+{% endblock %}
+
+{% block main %}
+
+	<h3 align="center"> Really sorry, but we do not support mobile devices at the moment.</h3>
+
+  <div class="main" >
+        <p>For now you can view the <a class="nav-link" href="/scores">SCORES</a>.</p>
+        <p> If you would like to get notified when the mobile version becomes available, please enter your e-mail below.</p>
+  </div>
+
+  <form action="/login" method="post">
+      <div class="form-group">
+          <input autocomplete="off" autofocus class="form-control" name="email" placeholder="e-mail" type="email"/>
+      </div>
+      <button class="btn btn-primary" type="submit">Submit</button>
+  </form>
+
+{% endblock %}

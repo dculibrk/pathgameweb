@@ -2,6 +2,8 @@ from __future__ import print_function
 #from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session, Response
 from flask_session import Session
+from flask.ext.mobility import Mobility
+from flask.ext.mobility.decorators import mobile_template
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -18,6 +20,7 @@ import redis
 
 # Configure application
 app = Flask(__name__)
+Mobility(app)
 
 @app.before_request
 def make_session_permanent():
@@ -115,13 +118,22 @@ class Hiscore(db.Model):
         self.gameid = gameid
         self.score = score
 
+class Email(db.Model):
+    __tablename__ = 'emails'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(256), unique=True, nullable=False)
+
+    def __init__(self, email):
+        self.email = email
+
 @app.route("/")
 @login_required
 def index():
     return render_template("index.html", level = session['level'])
 
 @app.route("/login", methods=["GET", "POST"])
-def login():
+@mobile_template('{mobile/}login.html')
+def login(template):
     """Log user in"""
 
     # Forget any user_id
@@ -130,31 +142,45 @@ def login():
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide username", 403)
+        if request.MOBILE:
+            if not request.form.get("email"):
+                return apology("must provide email", 403)
 
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password", 403)
+            exist_email = Email.query.filter(Email.email == request.form.get("email")).first()
+            if exist_email != None:
+                return apology("email already exists", 403)
 
-        # Query database for username
-        #rows = db.execute("SELECT * FROM users WHERE username = :username",
-        #                  username=request.form.get("username"))
+            new_email = Email(request.form.get("email"))
 
-        # Ensure username exists and password is correct
-        curr_user = User.query.filter(User.username == request.form.get("username")).first()
-        if curr_user == None or not check_password_hash(curr_user.passwd, request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+            db.session.add(new_user)
+            db.session.commit()
 
-        #if len(rows) != 1 or not check_password_hash(rows[0]["passwd"], request.form.get("password")):
-        #    return apology("invalid username and/or password", 403)
+        else:
+            # Ensure username was submitted
+            if not request.form.get("username"):
+                return apology("must provide username", 403)
 
-        # Remember which user has logged in
-        session['user_id'] = curr_user.id #rows[0]["userid"]
-        session['level'] = curr_user.level
-        # Redirect user to home page
-        return redirect("/")
+            # Ensure password was submitted
+            elif not request.form.get("password"):
+                return apology("must provide password", 403)
+
+            # Query database for username
+            #rows = db.execute("SELECT * FROM users WHERE username = :username",
+            #                  username=request.form.get("username"))
+
+            # Ensure username exists and password is correct
+            curr_user = User.query.filter(User.username == request.form.get("username")).first()
+            if curr_user == None or not check_password_hash(curr_user.passwd, request.form.get("password")):
+                return apology("invalid username and/or password", 403)
+
+            #if len(rows) != 1 or not check_password_hash(rows[0]["passwd"], request.form.get("password")):
+            #    return apology("invalid username and/or password", 403)
+
+            # Remember which user has logged in
+            session['user_id'] = curr_user.id #rows[0]["userid"]
+            session['level'] = curr_user.level
+            # Redirect user to home page
+            return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -212,7 +238,7 @@ def register():
         #    return apology("izaberi drugo ime")
         # Remember which user has logged in
         session['user_id'] = new_user.id
-
+        session['level'] = 1    #everybody starts at level 1
         # Redirect user to home page
         return redirect("/")
 
@@ -304,7 +330,6 @@ def worker():
     return result
 
 @app.route("/scores", methods = ['GET'])
-@login_required
 def scores():
     #rows = db.execute("SELECT username, shortestpathlength, besttime FROM hiscores INNER JOIN users ON hiscores.userid = users.userid LIMIT 10;")
     #rows = Hiscore.query.order_by(Hiscore.shortestpathlength,Hiscore.besttime).limit(10)
