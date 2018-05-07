@@ -143,6 +143,14 @@ def login(template):
     # Forget any user_id
     session.clear()
 
+    print(request.MOBILE)
+    browser = request.user_agent.browser
+    #version = request.user_agent.version and int(request.user_agent.version.split('.')[0])
+    platform = request.user_agent.platform
+    uas = request.user_agent.string
+    
+    print(platform)
+
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
