@@ -143,7 +143,7 @@ def login(template):
     # Forget any user_id
     session.clear()
 
-    #print('request.MOBILE is: ' + str(request.MOBILE) + '\n')
+    print('request.MOBILE is: ' + str(request.MOBILE) + '\n')
     #browser = request.user_agent.browser
     #version = request.user_agent.version and int(request.user_agent.version.split('.')[0])
     #platform = request.user_agent.platform
