@@ -135,6 +135,10 @@ def index():
 def info():
     return render_template("info.html")
 
+@app.route("/thanks")
+def thanks():
+    return render_template("thanks.html")
+
 @app.route("/login", methods=["GET", "POST"])
 @mobile_template('{mobile/}login.html')
 def login(template):
@@ -167,6 +171,8 @@ def login(template):
 
             db.session.add(new_email)
             db.session.commit()
+
+            return redirect("/thanks")
 
         else:
             # Ensure username was submitted
