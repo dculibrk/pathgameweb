@@ -5,6 +5,9 @@
 {% endblock %}
 
 {% block main %}
+    <h3 align="center"> Welcome! </h3>
+    <p>Please log in using an existing account or <a href="/register">register</a> to continue.</p>
+
     <form action="/login" method="post">
         <div class="form-group">
             <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text"/>

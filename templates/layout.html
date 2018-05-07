@@ -18,7 +18,7 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
 
         {% block level %}{% endblock %}
-        
+
         <!-- Load the Paper.js library and the game script-->
         <script type="text/javascript" src="/static/paper-full.js"></script>
         <script type="text/paperscript" canvas="dubasCanvas" src="/static/pathgame.js"></script>
@@ -38,10 +38,12 @@
                 {% if session.user_id %}
 
                     <ul class="navbar-nav ml-auto mt-2">
+                        <li class="nav-item"><a class="nav-link" href="/info">Info</a></li>
                         <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>
                     </ul>
                 {% else %}
                     <ul class="navbar-nav ml-auto mt-2">
+                        <li class="nav-item"><a class="nav-link" href="/info">Info</a></li>
                         <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
                         <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
                     </ul>

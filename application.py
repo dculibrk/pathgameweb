@@ -131,6 +131,10 @@ class Email(db.Model):
 def index():
     return render_template("index.html", level = session['level'])
 
+@app.route("/info")
+def info():
+    return render_template("info.html")
+
 @app.route("/login", methods=["GET", "POST"])
 @mobile_template('{mobile/}login.html')
 def login(template):
@@ -215,6 +219,9 @@ def register():
 
         if request.form.get("password") != request.form.get("confirmation"):
             return apology("password and confirmation doesn't match", 400)
+
+        if not request.form.get("acknowledge-terms"):
+            return apology("you need to agree to the data use terms", 400)
 
         name = request.form.get("username")
         sex = request.form.get("sex")
@@ -314,20 +321,6 @@ def get_post_javascript_data():
 
 
     return 'nja' # json.loads(jsdata)[0]
-
-@app.route('/receiver', methods = ['POST'])
-def worker():
-    # read json + reply
-    print('query arrived in /receiver!\n')
-    jsondata = request.get_json(force=True); #jsonify(request.json);
-    result = ''
-    if jsondata:
-        print('got some data!\n')
-
-        for item in jsondata:
-            # loop over every row
-            result += str(item['pointsdestination']) + '\n'
-    return result
 
 @app.route("/scores", methods = ['GET'])
 def scores():
