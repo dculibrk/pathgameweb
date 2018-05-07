@@ -2,8 +2,8 @@ from __future__ import print_function
 #from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session, Response
 from flask_session import Session
-from flask.ext.mobility import Mobility
-from flask.ext.mobility.decorators import mobile_template
+from flask_mobility import Mobility
+from flask_mobility.decorators import mobile_template
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -143,14 +143,14 @@ def login(template):
     # Forget any user_id
     session.clear()
 
-    print('request.MOBILE is: ' + str(request.MOBILE) + '\n')
-    browser = request.user_agent.browser
+    #print('request.MOBILE is: ' + str(request.MOBILE) + '\n')
+    #browser = request.user_agent.browser
     #version = request.user_agent.version and int(request.user_agent.version.split('.')[0])
-    platform = request.user_agent.platform
-    uas = request.user_agent.string
+    #platform = request.user_agent.platform
+    #uas = request.user_agent.string
 
-    print('platform is:' + platform +'\n')
-    print('uas is: ' + uas +'\n')
+    #print('platform is:' + platform +'\n')
+    #print('uas is: ' + uas +'\n')
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -197,7 +197,8 @@ def login(template):
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template("login.html")
+        #return render_template("login.html")
+        return render_template(template)
 
 @app.route("/logout")
 def logout():
