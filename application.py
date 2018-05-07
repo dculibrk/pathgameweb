@@ -165,7 +165,7 @@ def login(template):
 
             new_email = Email(request.form.get("email"))
 
-            db.session.add(new_user)
+            db.session.add(new_email)
             db.session.commit()
 
         else:
