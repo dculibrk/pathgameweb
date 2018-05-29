@@ -42,7 +42,7 @@ app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = 'redis' #'memcached' #'redis'# #"filesystem"
 #app.config["SESSION_REDIS"] = 'redis://h:pd834160182df6dadd4e7fa1f9ff67e89f1329d0beb0e81d78f66950bac972ad9@ec2-18-204-181-140.compute-1.amazonaws.com:20079'
-app.config["SESSION_REDIS"] = redis.from_url('redis://h:pd834160182df6dadd4e7fa1f9ff67e89f1329d0beb0e81d78f66950bac972ad9@ec2-18-204-181-140.compute-1.amazonaws.com:20079')
+app.config["SESSION_REDIS"] = redis.from_url(os.environ['REDIS_URL'])
 # Configure CS50 Library to use SQLite database
 #db = SQL("sqlite:///finance.db")
 #db = SQL("sqlite:///pathgame.db")
