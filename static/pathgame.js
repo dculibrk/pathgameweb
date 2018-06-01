@@ -26,7 +26,7 @@ var gameStarted = 0;
 //var level = 1; //parseInt({{level}});
 var probabilityDestination = 0.1;
 if(level > 60){
-    probabilityDestination = probabilityDestination + 0.01*59 + 0.001*(level - 60);
+    probabilityDestination = probabilityDestination + 0.01*59 + 0.0001*(level - 60);
 }else{
     probabilityDestination = probabilityDestination + 0.01*(level - 1);
 }; //20% of the grid points (randomly selected) will be destinations
