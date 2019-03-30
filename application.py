@@ -35,25 +35,18 @@ def after_request(response):
     return response
 
 
-
-
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = 'redis' #'memcached' #'redis'# #"filesystem"
-#app.config["SESSION_REDIS"] = 'redis://h:pd834160182df6dadd4e7fa1f9ff67e89f1329d0beb0e81d78f66950bac972ad9@ec2-18-204-181-140.compute-1.amazonaws.com:20079'
+
 app.config["SESSION_REDIS"] = redis.from_url(os.environ['REDIS_URL'])
-# Configure CS50 Library to use SQLite database
-#db = SQL("sqlite:///finance.db")
-#db = SQL("sqlite:///pathgame.db")
+
 #use SQL_alchemy to connect to the heroku database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 Session(app)
-#sess = Session()
-
-#sess.init_app(app)
 
 db = SQLAlchemy(app)
 
@@ -108,8 +101,6 @@ class Hiscore(db.Model):
     shortestpathlength = db.Column(db.Float, nullable=False)
     gameid = db.Column(db.Integer, db.ForeignKey("game.id"))
     score = db.Column(db.Integer)   # 3000 - shortestpathlength/numdestpoints + (10 - besttime/numdestpoints)*numdestpoints
-    #user = db.relationship('User',
-    #    backref=db.backref('hiscore', lazy=True))
 
     def __init__(self, userid, time, pathlength, gameid, score):
         self.userid = userid
@@ -148,13 +139,6 @@ def login(template):
     session.clear()
 
     print('request.MOBILE is: ' + str(request.MOBILE) + '\n')
-    #browser = request.user_agent.browser
-    #version = request.user_agent.version and int(request.user_agent.version.split('.')[0])
-    #platform = request.user_agent.platform
-    #uas = request.user_agent.string
-
-    #print('platform is:' + platform +'\n')
-    #print('uas is: ' + uas +'\n')
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -184,16 +168,11 @@ def login(template):
                 return apology("must provide password", 403)
 
             # Query database for username
-            #rows = db.execute("SELECT * FROM users WHERE username = :username",
-            #                  username=request.form.get("username"))
 
             # Ensure username exists and password is correct
             curr_user = User.query.filter(User.username == request.form.get("username")).first()
             if curr_user == None or not check_password_hash(curr_user.passwd, request.form.get("password")):
                 return apology("invalid username and/or password", 403)
-
-            #if len(rows) != 1 or not check_password_hash(rows[0]["passwd"], request.form.get("password")):
-            #    return apology("invalid username and/or password", 403)
 
             # Remember which user has logged in
             session['user_id'] = curr_user.id #rows[0]["userid"]
@@ -255,10 +234,6 @@ def register():
         #get the id
         new_user = User.query.filter(User.username == name).first()
 
-        #result = db.execute("INSERT INTO users (username, hash) VALUES(:username, :hash)",
-        #                    username=request.form.get("username"), hash=generate_password_hash(request.form.get("password")))
-        #if not result:
-        #    return apology("izaberi drugo ime")
         # Remember which user has logged in
         session['user_id'] = new_user.id
         session['level'] = 1    #everybody starts at level 1
@@ -273,7 +248,7 @@ def register():
 @login_required
 def get_post_javascript_data():
     if request.method == "POST":
-        jsdata = request.form.get('javascript_data') #request.form['javascript_data']
+        jsdata = request.form.get('javascript_data')
 
         if jsdata:
             print('got some jsdata!\n')
@@ -296,9 +271,6 @@ def get_post_javascript_data():
                 #store the game
                 result = Game(session['user_id'], jsondata['time'], jsondata['pathlength'],
                     str(jsondata['pointsdestination']), str(jsondata['pathpoints']), jsondata['numdestpoints'], session['level'], score)
-                #result = db.execute("INSERT INTO games (userid, time, pathlength, destinationpoints, pathpoints) VALUES(:userid, :time, :pathlength, :destinationpoints, :pathpoints)",
-                #    userid=session["user_id"], time=jsondata['time'], pathlength = jsondata['pathlength'],
-                #    destinationpoints = str(jsondata['pointsdestination']), pathpoints = str(jsondata['pathpoints']))
 
                 db.session.add(result)
 
@@ -309,26 +281,18 @@ def get_post_javascript_data():
 
                 #update hiscores
                 rows = Hiscore.query.filter(Hiscore.userid == session['user_id']).all()
-                #rows = db.execute("SELECT * FROM hiscores WHERE userid = :userid",
-                #          userid=session['user_id'])
 
                 # Ensure username exists and password is correct
                 if len(rows) != 1:
                     new_hiscore = Hiscore(session['user_id'], str(jsondata['time']), str(jsondata['pathlength']), result.id, score)
-                    #result = db.execute("INSERT INTO hiscores (userid, besttime, shortestpathlength) VALUES(:userid, :time, :pathlength)",
-                    #userid=session['user_id'], time=jsondata['time'], pathlength = jsondata['pathlength'])
                     db.session.add(new_hiscore)
                 else:
                     if rows[0].score < score:
-                    #if rows[0].shortestpathlength > jsondata['pathlength'] and rows[0].besttime > jsondata['time']:
                         rows[0].besttime = jsondata['time']
                         rows[0].shortestpathlength = jsondata['pathlength']
                         rows[0].userid = session['user_id']
                         rows[0].gameid = result.id
                         rows[0].score = score
-                    #if rows[0]['shortestpathlength'] > jsondata['pathlength'] and rows[0]['besttime'] > jsondata['time']:
-                        #result = db.execute("UPDATE hiscores (besttime, shortestpathlength) VALUES(:time, :pathlength) WHERE userid = :userid",
-                        #    time=jsondata['time'], pathlength = jsondata['pathlength'], userid=session['user_id'])
                 db.session.commit()
 
                 session['level'] = result.user.level #update the session level
@@ -336,12 +300,10 @@ def get_post_javascript_data():
                 print('user level is: ' + str(session['level']) + '\n')
 
 
-    return 'nja' # json.loads(jsdata)[0]
+    return 'nja'
 
 @app.route("/scores", methods = ['GET'])
 def scores():
-    #rows = db.execute("SELECT username, shortestpathlength, besttime FROM hiscores INNER JOIN users ON hiscores.userid = users.userid LIMIT 10;")
-    #rows = Hiscore.query.order_by(Hiscore.shortestpathlength,Hiscore.besttime).limit(10)
     rows = Hiscore.query.order_by(desc(Hiscore.score)).limit(10)
     print(rows)
     return render_template("scores.html", scores = rows)
@@ -354,7 +316,6 @@ def back():
 def errorhandler(e):
     """Handle error"""
     return apology(e.name, e.code)
-
 
 # listen for errors
 for code in default_exceptions:
