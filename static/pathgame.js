@@ -1,14 +1,14 @@
 //dimensions of grid (e.g. a 5x10 grid)
-var rows = 15;
-var cols = 15;
-
+//the dimensions of the table increase as the level increases
+var rows = 14 + level;
+var cols = 14 + level;
 //center coordinates of any circle being drawn
 var x;
 var y;
 
 //center coordinates of first circle being drawn
-var xstart = 90;
-var ystart = 50;
+var xstart = 10;
+var ystart = 25;
 
 // distance between center coordinates
 var xspacing = 30;//100;
@@ -16,6 +16,18 @@ var yspacing = 30;//100;
 
 var xend = xstart + xspacing*(cols-1);
 var yend = ystart + yspacing*(rows-1);
+
+//changed css style so grid can be centered while the dimensions increase
+document.getElementById("dubasCanvas").height = yend + 20;
+document.getElementById("dubasCanvas").width = xend + 20;
+document.getElementById("dubasCanvas").style.height = (yend + 20) + "px";
+document.getElementById("dubasCanvas").style.width = (xend + 20) + "px";
+
+document.getElementById("main_div").style.height = (yend + 170) + "px";
+document.getElementById("main_div").style.width = (xend + 150) + "px";
+
+document.getElementById("canvas_div").style.height = (yend + 150) + "px";
+document.getElementById("canvas_div").style.width = (xend + 150) + "px";
 
 var radius = 6;
 var fillColor = 'orange';
@@ -29,8 +41,7 @@ if(level > 60){
     probabilityDestination = probabilityDestination + 0.01*59 + 0.0002*(level - 60);
 }else{
     probabilityDestination = probabilityDestination + 0.01*(level - 1);
-}; //20% of the grid points (randomly selected) will be destinations
-
+} //20% of the grid points (randomly selected) will be destinations
 
 //var canvas = document.getElementById('dubasCanvas');
 //paper.setup(canvas);
@@ -80,9 +91,9 @@ var pointsGrid = []; //this holds the grid locations
 var pathGroup = new Group(); //this holds the lines of the path
 var numDestinations = 0; //this will be used to
 
-var text = new PointText({ point: view.top, justification: 'left', fontSize: 10, fillColor: 'green'});
+var text = new PointText({ point: view.top, justification: 'left', fontSize: 15, fillColor: 'green'});
 text.content = 'POINTS LEFT:';
-var text1 = new PointText({ point: view.top, justification: 'right', fontSize: 10, fillColor: 'black'})
+var text1 = new PointText({ point: view.top, justification: 'right', fontSize: 15, fillColor: 'black'});
 //var destination = Point.random() * view.size;
 //var vector = destination - text1.position;
 //text1.position += vector/3;
@@ -397,9 +408,10 @@ for(var row = 0, i = 0; row < rows; row++) {
     }
 }
 
-var textover = new PointText({ point: view.center, justification: 'center', fontSize: 70, fillColor: 'cyan'});
+var textover = new PointText({ point: view.center, justification: 'center', fontSize: rows*3.75, fillColor: 'cyan'});
 //textover.position.x -= xstart;
-textover.position.y = Math.floor(rows/2)*yspacing + ystart; //-=ystart;
+textover.position.x = Math.floor(cols/2 + 1)*yspacing + xstart + level*8;
+textover.position.y = Math.floor(rows/2 + 1)*yspacing + ystart + level*10; //-=ystart;
 textover.content = 'LEVEL ' +  level + ' DONE!'; //'GAME OVER!';
 textover.opacity = 0;
 
@@ -434,7 +446,7 @@ depo.onMouseDown = function(event) {
     }else{
         window.location.assign("/back");
     }
-}
+};
 //gridGroup.addChild(depo);
 
 //add the depo to the suggested path
@@ -447,7 +459,7 @@ textover.onMouseDown = function(event) {
     if(gameOver){
         window.location.assign("/back");
     }
-}
+};
 
 //animate stuff
 function onFrame(event) {
