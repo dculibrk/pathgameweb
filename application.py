@@ -40,7 +40,7 @@ app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = 'redis' #'memcached' #'redis'# #"filesystem"
 
-app.config["SESSION_REDIS"] = redis.from_url(os.environ['REDIS_URL'])
+# app.config["SESSION_REDIS"] = redis.from_url(os.environ['REDIS_URL'])
 
 #use SQL_alchemy to connect to the heroku database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
