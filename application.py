@@ -247,60 +247,87 @@ def register():
 @app.route('/postmethod', methods = ['POST'])
 @login_required
 def get_post_javascript_data():
-    if request.method == "POST":
-        jsdata = request.form.get('javascript_data')
+    try:
+        if request.method == "POST":
+            jsdata = request.form.get('javascript_data')
 
-        if jsdata:
-            print('got some jsdata!\n')
+            if jsdata:
+                print('got some jsdata!\n')
 
-            jsondata = json.loads(jsdata)
+                jsondata = json.loads(jsdata)
 
-            if jsondata:
-                print('got some json data!\n')
-                print('time was: ' + str(jsondata['time']) + '\n')
-                print('length was: ' + str(jsondata['pathlength']) + '\n')
-                print('num dest points was: ' + str(jsondata['numdestpoints']) + '\n')
+                if jsondata:
+                    print('got some json data!\n')
+                    print('time was: ' + str(jsondata['time']) + '\n')
+                    print('length was: ' + str(jsondata['pathlength']) + '\n')
+                    print('num dest points was: ' + str(jsondata['numdestpoints']) + '\n')
 
-                for item in jsondata:
-                    print(item)
+                    for item in jsondata:
+                        print(item)
 
-                print(jsondata['pathpoints'])
+                    print(jsondata['pathpoints'])
 
-                score = 3000 - jsondata['pathlength']/jsondata['numdestpoints'] + (10 - jsondata['time']/jsondata['numdestpoints'])*jsondata['numdestpoints'] # 3000 - pathlength/numdestpoints + (10 - time/numdestpoints)*numdestpoints
+                    score = 3000 - jsondata['pathlength']/jsondata['numdestpoints'] + (10 - jsondata['time']/jsondata['numdestpoints'])*jsondata['numdestpoints'] # 3000 - pathlength/numdestpoints + (10 - time/numdestpoints)*numdestpoints
 
-                #store the game
-                result = Game(session['user_id'], jsondata['time'], jsondata['pathlength'],
-                    str(jsondata['pointsdestination']), str(jsondata['pathpoints']), jsondata['numdestpoints'], session['level'], score)
+                    print("score")
 
-                db.session.add(result)
+                    #store the game
+                    result = Game(session['user_id'], jsondata['time'], jsondata['pathlength'],
+                        str(jsondata['pointsdestination']), str(jsondata['pathpoints']), jsondata['numdestpoints'], session['level'], score)
 
-                db.session.flush() #to get the game.id assigned
+                    print("result")
 
-                #increase the user level
-                result.user.level = result.user.level + 1;
-
-                #update hiscores
-                rows = Hiscore.query.filter(Hiscore.userid == session['user_id']).all()
-
-                # Ensure username exists and password is correct
-                if len(rows) != 1:
-                    new_hiscore = Hiscore(session['user_id'], str(jsondata['time']), str(jsondata['pathlength']), result.id, score)
-                    db.session.add(new_hiscore)
-                else:
-                    if rows[0].score < score:
-                        rows[0].besttime = jsondata['time']
-                        rows[0].shortestpathlength = jsondata['pathlength']
-                        rows[0].userid = session['user_id']
-                        rows[0].gameid = result.id
-                        rows[0].score = score
-                db.session.commit()
-
-                session['level'] = result.user.level #update the session level
-
-                print('user level is: ' + str(session['level']) + '\n')
+                    db.session.add(result)
 
 
-    return 'nja'
+                    print("db.session.add(result)")
+
+                    try:
+                        db.session.flush() #to get the game.id assigned
+                    except:
+                        pass
+                    finally:
+                        print("db.session.flush()")
+
+                        #increase the user level
+                        result.user.level = result.user.level + 1
+
+                        print("result.user.level")
+
+                        #update hiscores
+                        rows = Hiscore.query.filter(Hiscore.userid == session['user_id']).all()
+
+                        print("Hiscore.query.")
+
+                        # Ensure username exists and password is correct
+                        if len(rows) != 1:
+                            new_hiscore = Hiscore(session['user_id'], str(jsondata['time']), str(jsondata['pathlength']), result.id, score)
+                            db.session.add(new_hiscore)
+                            print("db.session.add(new_hiscore)")
+                        else:
+                            if rows[0].score < score:
+                                rows[0].besttime = jsondata['time']
+                                rows[0].shortestpathlength = jsondata['pathlength']
+                                rows[0].userid = session['user_id']
+                                rows[0].gameid = result.id
+                                rows[0].score = score
+                        db.session.commit()
+
+                        print("db.session.commit()")
+
+                        session['level'] = result.user.level #update the session level
+
+                        print('user level is: ' + str(session['level']) + '\n')
+
+
+        return 'nja'
+
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt Error Happened")
+        pass
+    except:
+        print("Error happened")
+        pass
 
 @app.route("/scores", methods = ['GET'])
 def scores():
@@ -315,7 +342,23 @@ def back():
 
 def errorhandler(e):
     """Handle error"""
-    return apology(e.name, e.code)
+    # print("HIT")
+    print(e)
+    # print("HIT")
+    if hasattr(e, 'code'):
+        if hasattr(e, 'name'):
+            return apology(e.name, e.code)
+        elif hasattr(e, 'message'):
+            return apology(e.message, e.code)
+        else:
+            return apology(str(e), e.code)
+    else:
+        if hasattr(e, 'name'):
+            return apology(e.name, 0)
+        elif hasattr(e, 'message'):
+            return apology(e.message, 0)
+        else:
+            return apology(str(e), 0)
 
 # listen for errors
 for code in default_exceptions:

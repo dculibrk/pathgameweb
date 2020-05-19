@@ -8,14 +8,79 @@ var y;
 
 //center coordinates of first circle being drawn
 var xstart = 10;
-var ystart = 25;
+var ystart = 23;
 
 // distance between center coordinates
-var xspacing = 30;//100;
-var yspacing = 30;//100;
+var xspacing = 25;//100;
+var yspacing = 25;//100;
+
+// text shown at the end of the level
+var fontSize = 60;
+
+// size of the blue path that is created when moving mouse
+var strokeWidth = 7;
+
+// change of the color at the end of each level
+var textOverColorHue = 1;
+
+if(level < 20) {
+    fontSize = level + 35;
+
+} else if(level >= 20 && level <= 30) {
+    xspacing = 20;
+    yspacing = 20;
+    fontSize = level + 40;
+    strokeWidth = 7;
+    textOverColorHue = 2;
+} else if(level > 30 && level <= 40) {
+    xspacing = 32 - 2*level/5;
+    yspacing = 32 - 2*level/5;
+    fontSize = level + 40;
+    strokeWidth = 6;
+    textOverColorHue = 3;
+} else if(level > 40 && level <= 60) {
+    xspacing = 24 - level/5;
+    yspacing = 24 - level/5;
+    fontSize = 80;
+    strokeWidth = 11 - level/10;
+    textOverColorHue = 4;
+} else if(level > 60 && level <= 70) {
+    xspacing = 21 - 0.15*level; //10.5;
+    yspacing = 21 - 0.15*level; //10.5;
+    fontSize = 80;
+    strokeWidth = 5;
+    textOverColorHue = 5;
+} else if(level > 70 && level <= 80) {
+    xspacing = 17.5 - 0.1*level; // 9.5
+    yspacing = 17.5 - 0.1*level; // 9.5
+    fontSize = 80;
+    strokeWidth = 4.5;
+    textOverColorHue = 6;
+} else if(level > 80 && level <= 90) {
+    xspacing = 16.7 - 0.09*level; //8.6;
+    yspacing = 16.7 - 0.09*level; //8.6;
+    fontSize = 80;
+    strokeWidth = 4.5;
+    textOverColorHue = 7;
+} else if(level > 90 && level <= 100) {
+    xspacing = 15.8 - 0.08*level; //7.8;
+    yspacing = 15.8 - 0.08*level; //7.8;
+    fontSize = 80;
+    strokeWidth = 4;
+    textOverColorHue = 8;
+} else if(level > 100){
+    xspacing = 7; //7.8;
+    yspacing = 7; //7.8;
+    fontSize = 50;
+    strokeWidth = 4;
+    textOverColorHue = 8;
+}
 
 var xend = xstart + xspacing*(cols-1);
 var yend = ystart + yspacing*(rows-1);
+
+// depo rotation speed
+var depoRotationSpeed = (level/10) > 3 ? (level/10) + Math.floor(level/100) : 3;
 
 //changed css style so grid can be centered while the dimensions increase
 document.getElementById("dubasCanvas").height = yend + 20;
@@ -23,13 +88,20 @@ document.getElementById("dubasCanvas").width = xend + 20;
 document.getElementById("dubasCanvas").style.height = (yend + 20) + "px";
 document.getElementById("dubasCanvas").style.width = (xend + 20) + "px";
 
-document.getElementById("main_div").style.height = (yend + 170) + "px";
+document.getElementById("main_div").style.height = (yend + 85) + "px";
 document.getElementById("main_div").style.width = (xend + 150) + "px";
 
 document.getElementById("canvas_div").style.height = (yend + 150) + "px";
 document.getElementById("canvas_div").style.width = (xend + 150) + "px";
 
 var radius = 6;
+if(level > 20) {
+    radius = 6 - Math.floor((level/22)*100)/100;
+} else if(level > 90){
+    radius = 5;
+}
+console.log("radius", radius);
+
 var fillColor = 'orange';
 
 var points = [];
@@ -42,6 +114,9 @@ if(level > 60){
 }else{
     probabilityDestination = probabilityDestination + 0.01*(level - 1);
 } //20% of the grid points (randomly selected) will be destinations
+
+// THIS SHOULD BE DELETED AFTER TESTING HOW EVERYTHING LOOKS
+probabilityDestination = 0.005;
 
 //var canvas = document.getElementById('dubasCanvas');
 //paper.setup(canvas);
@@ -224,7 +299,7 @@ function addPointToSuggestedPath(point){
     var point_loc = new Point(pointsGrid[point].x, pointsGrid[point].y);
     var segm = new Path.Line(suggestedPathPoints[suggestedPathPoints.length-1], point_loc);
     segm.strokeColor = 'blue';
-    segm.strokeWidth = 10;
+    segm.strokeWidth = strokeWidth;
     segm.opacity = 0.5;
     suggestedPathLines.addChild(segm);
 
@@ -408,13 +483,29 @@ for(var row = 0, i = 0; row < rows; row++) {
     }
 }
 
-var textover = new PointText({ point: view.center, justification: 'center', fontSize: rows*3.75, fillColor: 'cyan'});
-//textover.position.x -= xstart;
-textover.position.x = Math.floor(cols/2 + 1)*yspacing + xstart + level*8;
-textover.position.y = Math.floor(rows/2 + 1)*yspacing + ystart + level*10; //-=ystart;
+var textover = new PointText({ point: view.center, justification: 'center', fontSize: fontSize, fillColor: 'cyan'});
+// var textover = new PointText({ position: view.center, content: 'Text', fillColor: 'black', fontFamily: 'Courier New', fontWeight: 'bold', fontSize: 25 });
+var canvas = document.getElementById('dubasCanvas');
+var context = canvas.getContext('2d');
+// console.log(context);
+// var textwidth = context.measureText(textover).width;
+// console.log("textwidth", textwidth);
+// console.log("rows", rows);
+// console.log("cols", cols);
+// console.log("xstart", xstart);
+// console.log("ystart", ystart);
+// textover.position.x = xstart + Math.floor(cols/2 - 1)*(xspacing + 10) - textwidth/2;
+// textover.position.y = ystart + Math.floor(rows/2 - 1)*(yspacing + 10) - textwidth/10; //-=ystart;
+textover.position.x = context.canvas.width/2;
+textover.position.y = context.canvas.height/2;
+// console.log("textover.position.x", textover.position.x);
+// console.log("textover.position.y", textover.position.y);
 textover.content = 'LEVEL ' +  level + ' DONE!'; //'GAME OVER!';
 textover.opacity = 0;
-
+if(level > 100) {
+    textover.content = 'YOU PASSED 100 LEVELS!'; //'GAME OVER!';
+    textover.opacity = 1;
+}
 //create the depo to be in the middle of the grid
 var depox = Math.floor(cols/2)*xspacing + xstart;
 var depoy = Math.floor(rows/2)*yspacing + ystart;
@@ -426,27 +517,31 @@ var depoy = Math.floor(rows/2)*yspacing + ystart;
 
 //var rectangle = new Rectangle(depox-xspacing/8, depoy-yspacing/8, xspacing/4, yspacing/4);
 var rectangle = new Rectangle(depox-2*radius, depoy-2*radius, 4*radius, 4*radius);
+var depo = null;
 
-var depo = new Path.Rectangle(rectangle);
-depo.fillColor = 'cyan';
-depo.name = 'depo';
-depo.onMouseDown = function(event) {
-    if(!gameStarted){
-        this.fillColor = 'red';
-        gameStarted = 1;
-    }else if (!gameOver){
-        //
-        if(numDestinations <= 0){
-            //we are in the end game stage
-            for(var i = 0; i < suggestedPathPoints.length; i++){
-                pathPoints.push(suggestedPathPoints[i]);
+// LIMIT GAME TO 100 LEVELS
+if(level <= 100){
+    depo =new Path.Rectangle(rectangle);
+    depo.fillColor = 'cyan';
+    depo.name = 'depo';
+    depo.onMouseDown = function(event) {
+        if(!gameStarted){
+            this.fillColor = 'red';
+            gameStarted = 1;
+        }else if (!gameOver){
+            //
+            if(numDestinations <= 0){
+                //we are in the end game stage
+                for(var i = 0; i < suggestedPathPoints.length; i++){
+                    pathPoints.push(suggestedPathPoints[i]);
+                }
+                endGame();
             }
-            endGame();
+        }else{
+            window.location.assign("/back");
         }
-    }else{
-        window.location.assign("/back");
-    }
-};
+    };
+}
 //gridGroup.addChild(depo);
 
 //add the depo to the suggested path
@@ -464,7 +559,7 @@ textover.onMouseDown = function(event) {
 //animate stuff
 function onFrame(event) {
     // Each frame, rotate the path by 3 degrees:
-    depo.rotate(3);
+    depo.rotate(depoRotationSpeed);
 
     if(gameStarted && !gameOver){
         timeElapsed += event.delta;
@@ -484,9 +579,9 @@ function onFrame(event) {
         if(textover.opacity < 1) {
             textover.opacity += 0.1;
         }else{
-            textover.fillColor.hue += 1;
+            textover.fillColor.hue += textOverColorHue;
         }
-        depo.fillColor.hue += 1;
+        depo.fillColor.hue += textOverColorHue;
     }
 
 }
