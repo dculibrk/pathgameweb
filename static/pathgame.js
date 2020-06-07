@@ -477,7 +477,7 @@ var context = canvas.getContext('2d');
 // textover.position.x = xstart + Math.floor(cols/2 - 1)*(xspacing + 10) - textwidth/2;
 // textover.position.y = ystart + Math.floor(rows/2 - 1)*(yspacing + 10) - textwidth/10; //-=ystart;
 textover.position.x = context.canvas.width/2;
-textover.position.y = context.canvas.height/2;
+textover.position.y = Math.floor(rows/2)*yspacing + ystart; //-=ystart;
 // console.log("textover.position.x", textover.position.x);
 // console.log("textover.position.y", textover.position.y);
 textover.content = 'LEVEL ' +  level + ' DONE!'; //'GAME OVER!';
