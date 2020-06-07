@@ -33,19 +33,22 @@ var textOverColorHue = 1;
 
 // number of cicles
 var numberOfCircles = Math.floor(level/numberOfLevels);
-console.log("numberOfCircles", numberOfCircles);
 
 // ratio of number of destinations that we should collect to total destinations
-var probabilityDestination = 0.005;
+var probabilityDestination = 0.65;
 
-// TODO Uncommend this when GUI testing is finished
-// if(level >= 40 && level < 80){
-//     probabilityDestination = 0.75;
-// } else if(level >= 80 && level < 160){
-//     probabilityDestination = Math.floor(70 + 5*numberOfCircles)/100;
-// } else if(level > 160){
-//     probabilityDestination = 0.9;
-// }
+if(level > 40 && level <= 81){
+    probabilityDestination = 0.75;
+} else if(level > 81 && level <= 122){
+    probabilityDestination = 0.8
+} else if(level > 122 && level <= 163){
+    probabilityDestination = 0.85
+} else if(level > 163){
+    probabilityDestination = Math.floor(86 +  numberOfCircles - 4)/100;
+    if(probabilityDestination > 0.9){
+        probabilityDestination = 0.9;
+    }
+}
 
 // dimensions of the circles in grid
 var radius = 6;
@@ -75,8 +78,6 @@ if(level < 19 + numberOfCircles*41) {
     radius = 4;
     depoRotationSpeed = 6;
 }
-console.log("rows", rows);
-console.log("level", level);
 
 var xend = xstart + xspacing*(cols-1);
 var yend = ystart + yspacing*(rows-1);
@@ -478,7 +479,6 @@ var context = canvas.getContext('2d');
 // textover.position.y = ystart + Math.floor(rows/2 - 1)*(yspacing + 10) - textwidth/10; //-=ystart;
 textover.position.x = context.canvas.width/2;
 textover.position.y = Math.floor(rows/2)*yspacing + ystart; //-=ystart;
-console.log("y position", Math.floor(rows/2)*yspacing + ystart);
 // console.log("textover.position.x", textover.position.x);
 // console.log("textover.position.y", textover.position.y);
 textover.content = 'LEVEL ' +  level + ' DONE!'; //'GAME OVER!';
