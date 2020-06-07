@@ -16419,9 +16419,11 @@ Base.exports.PaperScript = function() {
 				src = script.src || script.getAttribute('data-src'),
 				async = PaperScope.hasAttribute(script, 'async'),
 				scopeAttribute = 'data-paper-scope';
-			if (!canvas)
-				throw new Error('Unable to find canvas with id "'
-						+ canvasId + '"');
+			if (!canvas) {
+				// console.log('Unable to find canvas with id "'
+				// 	+ canvasId + '"');
+				return;
+			}
 			var scope = PaperScope.get(canvas.getAttribute(scopeAttribute))
 						|| new PaperScope().setup(canvas);
 			canvas.setAttribute(scopeAttribute, scope._id);

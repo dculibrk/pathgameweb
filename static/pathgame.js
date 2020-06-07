@@ -1,7 +1,12 @@
+// number of levels that we have until restart the grid dimensions to 10x10
+var numberOfLevels = 41;
+
+var increaseStep = (level%41 === 0) ? 0 : level === 1 ? 0 : level%41;
 //dimensions of grid (e.g. a 5x10 grid)
 //the dimensions of the table increase as the level increases
-var rows = 14 + level;
-var cols = 14 + level;
+var rows = 10 + increaseStep;
+var cols = 10 + increaseStep;
+
 //center coordinates of any circle being drawn
 var x;
 var y;
@@ -17,70 +22,64 @@ var yspacing = 25;//100;
 // text shown at the end of the level
 var fontSize = 60;
 
+// text shown at the end of the level
+var fontSizeOther = 10;
+
 // size of the blue path that is created when moving mouse
 var strokeWidth = 7;
 
 // change of the color at the end of each level
 var textOverColorHue = 1;
 
-if(level < 20) {
-    fontSize = level + 35;
+// number of cicles
+var numberOfCircles = Math.floor(level/numberOfLevels);
+console.log("numberOfCircles", numberOfCircles);
 
-} else if(level >= 20 && level <= 30) {
-    xspacing = 20;
-    yspacing = 20;
-    fontSize = level + 40;
+// ratio of number of destinations that we should collect to total destinations
+var probabilityDestination = 0.005;
+
+// TODO Uncommend this when GUI testing is finished
+// if(level >= 40 && level < 80){
+//     probabilityDestination = 0.75;
+// } else if(level >= 80 && level < 160){
+//     probabilityDestination = Math.floor(70 + 5*numberOfCircles)/100;
+// } else if(level > 160){
+//     probabilityDestination = 0.9;
+// }
+
+// dimensions of the circles in grid
+var radius = 6;
+
+// depo rotation speed
+var depoRotationSpeed = 3;
+if(level < 19 + numberOfCircles*41) {
+    fontSize = (level%41)*1.5 + 20;
+    textOverColorHue = 4;
+    xspacing = 25;
+    yspacing = 25;
     strokeWidth = 7;
+} else if(level >= 19 + numberOfCircles*41 && level <= 29 + numberOfCircles*41) {
+    xspacing = 18;
+    yspacing = 18;
+    fontSize = level%41 + 15;
+    strokeWidth = 6.5;
     textOverColorHue = 2;
-} else if(level > 30 && level <= 40) {
-    xspacing = 32 - 2*level/5;
-    yspacing = 32 - 2*level/5;
-    fontSize = level + 40;
+    radius = 4.7;
+    depoRotationSpeed = 4.5;
+} else if(level > 29 + numberOfCircles*41 && level <= 41 + numberOfCircles*41) {
+    xspacing = 14;
+    yspacing = 14;
+    fontSize = level%41 + 30;
     strokeWidth = 6;
     textOverColorHue = 3;
-} else if(level > 40 && level <= 60) {
-    xspacing = 24 - level/5;
-    yspacing = 24 - level/5;
-    fontSize = 80;
-    strokeWidth = 11 - level/10;
-    textOverColorHue = 4;
-} else if(level > 60 && level <= 70) {
-    xspacing = 21 - 0.15*level; //10.5;
-    yspacing = 21 - 0.15*level; //10.5;
-    fontSize = 80;
-    strokeWidth = 5;
-    textOverColorHue = 5;
-} else if(level > 70 && level <= 80) {
-    xspacing = 17.5 - 0.1*level; // 9.5
-    yspacing = 17.5 - 0.1*level; // 9.5
-    fontSize = 80;
-    strokeWidth = 4.5;
-    textOverColorHue = 6;
-} else if(level > 80 && level <= 90) {
-    xspacing = 16.7 - 0.09*level; //8.6;
-    yspacing = 16.7 - 0.09*level; //8.6;
-    fontSize = 80;
-    strokeWidth = 4.5;
-    textOverColorHue = 7;
-} else if(level > 90 && level <= 100) {
-    xspacing = 15.8 - 0.08*level; //7.8;
-    yspacing = 15.8 - 0.08*level; //7.8;
-    fontSize = 80;
-    strokeWidth = 4;
-    textOverColorHue = 8;
-} else if(level > 100){
-    xspacing = 7; //7.8;
-    yspacing = 7; //7.8;
-    fontSize = 50;
-    strokeWidth = 4;
-    textOverColorHue = 8;
+    radius = 4;
+    depoRotationSpeed = 6;
 }
+console.log("rows", rows);
+console.log("level", level);
 
 var xend = xstart + xspacing*(cols-1);
 var yend = ystart + yspacing*(rows-1);
-
-// depo rotation speed
-var depoRotationSpeed = (level/10) > 3 ? (level/10) + Math.floor(level/100) : 3;
 
 //changed css style so grid can be centered while the dimensions increase
 document.getElementById("dubasCanvas").height = yend + 20;
@@ -88,35 +87,16 @@ document.getElementById("dubasCanvas").width = xend + 20;
 document.getElementById("dubasCanvas").style.height = (yend + 20) + "px";
 document.getElementById("dubasCanvas").style.width = (xend + 20) + "px";
 
-document.getElementById("main_div").style.height = (yend + 85) + "px";
+document.getElementById("main_div").style.height = (yend + 110) + "px";
 document.getElementById("main_div").style.width = (xend + 150) + "px";
 
 document.getElementById("canvas_div").style.height = (yend + 150) + "px";
 document.getElementById("canvas_div").style.width = (xend + 150) + "px";
 
-var radius = 6;
-if(level > 20) {
-    radius = 6 - Math.floor((level/22)*100)/100;
-} else if(level > 90){
-    radius = 5;
-}
-console.log("radius", radius);
-
 var fillColor = 'orange';
 
 var points = [];
 var gameStarted = 0;
-
-//var level = 1; //parseInt({{level}});
-var probabilityDestination = 0.1;
-if(level > 60){
-    probabilityDestination = probabilityDestination + 0.01*59 + 0.0002*(level - 60);
-}else{
-    probabilityDestination = probabilityDestination + 0.01*(level - 1);
-} //20% of the grid points (randomly selected) will be destinations
-
-// THIS SHOULD BE DELETED AFTER TESTING HOW EVERYTHING LOOKS
-probabilityDestination = 0.005;
 
 //var canvas = document.getElementById('dubasCanvas');
 //paper.setup(canvas);
@@ -166,9 +146,9 @@ var pointsGrid = []; //this holds the grid locations
 var pathGroup = new Group(); //this holds the lines of the path
 var numDestinations = 0; //this will be used to
 
-var text = new PointText({ point: view.top, justification: 'left', fontSize: 15, fillColor: 'green'});
+var text = new PointText({ point: view.top, justification: 'left', fontSize: fontSizeOther, fillColor: 'green'});
 text.content = 'POINTS LEFT:';
-var text1 = new PointText({ point: view.top, justification: 'right', fontSize: 15, fillColor: 'black'});
+var text1 = new PointText({ point: view.top, justification: 'right', fontSize: fontSizeOther, fillColor: 'black'});
 //var destination = Point.random() * view.size;
 //var vector = destination - text1.position;
 //text1.position += vector/3;
@@ -176,7 +156,7 @@ var text1 = new PointText({ point: view.top, justification: 'right', fontSize: 1
 text1.position.x = xend;
 text1.position.y += (ystart - 10);
 
-text.position.x = xstart + 50;
+text.position.x = xstart + 40;
 text.position.y += (ystart - 10);
 
 text1.content =  'TIME: ' + 0;
@@ -502,10 +482,10 @@ textover.position.y = context.canvas.height/2;
 // console.log("textover.position.y", textover.position.y);
 textover.content = 'LEVEL ' +  level + ' DONE!'; //'GAME OVER!';
 textover.opacity = 0;
-if(level > 100) {
-    textover.content = 'YOU PASSED 100 LEVELS!'; //'GAME OVER!';
-    textover.opacity = 1;
-}
+// if(level > 100) {
+//     textover.content = 'YOU PASSED 100 LEVELS!'; //'GAME OVER!';
+//     textover.opacity = 1;
+// }
 //create the depo to be in the middle of the grid
 var depox = Math.floor(cols/2)*xspacing + xstart;
 var depoy = Math.floor(rows/2)*yspacing + ystart;
@@ -520,28 +500,28 @@ var rectangle = new Rectangle(depox-2*radius, depoy-2*radius, 4*radius, 4*radius
 var depo = null;
 
 // LIMIT GAME TO 100 LEVELS
-if(level <= 100){
-    depo =new Path.Rectangle(rectangle);
-    depo.fillColor = 'cyan';
-    depo.name = 'depo';
-    depo.onMouseDown = function(event) {
-        if(!gameStarted){
-            this.fillColor = 'red';
-            gameStarted = 1;
-        }else if (!gameOver){
-            //
-            if(numDestinations <= 0){
-                //we are in the end game stage
-                for(var i = 0; i < suggestedPathPoints.length; i++){
-                    pathPoints.push(suggestedPathPoints[i]);
-                }
-                endGame();
+// if(level <= 100){
+depo =new Path.Rectangle(rectangle);
+depo.fillColor = 'cyan';
+depo.name = 'depo';
+depo.onMouseDown = function(event) {
+    if(!gameStarted){
+        this.fillColor = 'red';
+        gameStarted = 1;
+    }else if (!gameOver){
+        //
+        if(numDestinations <= 0){
+            //we are in the end game stage
+            for(var i = 0; i < suggestedPathPoints.length; i++){
+                pathPoints.push(suggestedPathPoints[i]);
             }
-        }else{
-            window.location.assign("/back");
+            endGame();
         }
-    };
-}
+    }else{
+        window.location.assign("/back");
+    }
+};
+// }
 //gridGroup.addChild(depo);
 
 //add the depo to the suggested path
