@@ -75,8 +75,8 @@ class Game(db.Model):
     userid = db.Column(db.Integer, db.ForeignKey("user.id"))
     time = db.Column(db.Float, nullable=False)
     pathlength = db.Column(db.Float, nullable=False)
-    destinationpoints = db.Column(db.String(4096), nullable=False)
-    pathpoints = db.Column(db.String(4096), nullable=False)
+    destinationpoints = db.Column(db.String(), nullable=False)
+    pathpoints = db.Column(db.String(), nullable=False)
     numdestpoints = db.Column(db.Integer)
     level = db.Column(db.Integer)
     score = db.Column(db.Integer)   # 3000 - pathlength/numdestpoints + (10 - time/numdestpoints)*numdestpoints
